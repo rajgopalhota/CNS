@@ -1,0 +1,1587 @@
+String sorting 
+--------------------------------------------------------------
+// C program to sort an array of strings
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Function to sort the values
+void sort(char** names, int n)
+{
+	int i, j;
+
+	// Perform sort operation using bubble sort
+	for (i = 0; i < n - 1; i++)
+		for (j = 0; j < n - i - 1; j++)
+			if (strcmp(names[j], names[j + 1]) > 0) {
+				char* temp;
+				temp = (char*)calloc(30, sizeof(char));
+				strcpy(temp, names[j]);
+				strcpy(names[j], names[j + 1]);
+				strcpy(names[j + 1], temp);
+			}
+}
+
+// Driver code
+int main()
+{
+	char** names;
+	int n, i;
+	printf("Enter the number of names to be printed: ");
+	scanf("%d\n", &n);
+
+	// allocating memory for 1st dimension
+	names = (char**)calloc(n, sizeof(char*));
+
+	for (i = 0; i < n; i++)
+	// allocating memory for 2nd dimension
+	{
+		names[i] = (char*)calloc(30, sizeof(char));
+		scanf("%s", names[i]);
+	}
+	sort(names, n);
+
+	printf("\nArray after sorting:\n");
+	for (i = 0; i < n; i++)
+		printf("%s\n", names[i]);
+
+	return 0;
+}
+
+---------------------------------------------------------------
+naive
+--------------------------------------------------------------
+// Java program for Naive Pattern Searching
+
+public class NaiveSearch {
+
+	static void search(String pat, String txt)
+	{
+		int l1 = pat.length();
+		int l2 = txt.length();
+		int i = 0, j = l2 - 1;
+
+		for (i = 0, j = l2 - 1; j < l1;) {
+
+			if (txt.equals(pat.substring(i, j + 1))) {
+				System.out.println("Pattern found at index "
+								+ i);
+			}
+			i++;
+			j++;
+		}
+	}
+	
+	// Driver's code
+	public static void main(String args[])
+	{
+		String pat = "AABAACAADAABAAABAA";
+		String txt = "AABA";
+	
+		// Function call
+		search(pat, txt);
+	}
+}
+---------------------------------------------------------------
+rabin krap
+--------------------------------------------------------------
+/* Following program is a C implementation of Rabin Karp
+Algorithm given in the CLRS book */
+#include <stdio.h>
+#include <string.h>
+
+// d is the number of characters in the input alphabet
+#define d 256
+
+/* pat -> pattern
+	txt -> text
+	q -> A prime number
+*/
+void search(char pat[], char txt[], int q)
+{
+	int M = strlen(pat);
+	int N = strlen(txt);
+	int i, j;
+	int p = 0; // hash value for pattern
+	int t = 0; // hash value for txt
+	int h = 1;
+
+	// The value of h would be "pow(d, M-1)%q"
+	for (i = 0; i < M - 1; i++)
+		h = (h * d) % q;
+
+	// Calculate the hash value of pattern and first
+	// window of text
+	for (i = 0; i < M; i++) {
+		p = (d * p + pat[i]) % q;
+		t = (d * t + txt[i]) % q;
+	}
+
+	// Slide the pattern over text one by one
+	for (i = 0; i <= N - M; i++) {
+
+		// Check the hash values of current window of text
+		// and pattern. If the hash values match then only
+		// check for characters one by one
+		if (p == t) {
+			/* Check for characters one by one */
+			for (j = 0; j < M; j++) {
+				if (txt[i + j] != pat[j])
+					break;
+			}
+
+			// if p == t and pat[0...M-1] = txt[i, i+1,
+			// ...i+M-1]
+			if (j == M)
+				printf("Pattern found at index %d \n", i);
+		}
+
+		// Calculate hash value for next window of text:
+		// Remove leading digit, add trailing digit
+		if (i < N - M) {
+			t = (d * (t - txt[i] * h) + txt[i + M]) % q;
+
+			// We might get negative value of t, converting
+			// it to positive
+			if (t < 0)
+				t = (t + q);
+		}
+	}
+}
+
+/* Driver Code */
+int main()
+{
+	char txt[] = "GEEKS FOR GEEKS";
+	char pat[] = "GEEK";
+
+	// A prime number
+	int q = 101;
+
+	// function call
+	search(pat, txt, q);
+	return 0;
+}
+
+Output
+Pattern found at index 0
+Pattern found at index 10
+--------------------------------------------------------------
+kmp
+---------------------------------------------------------------
+// JAVA program for implementation of KMP pattern
+// searching algorithm
+
+class KMP_String_Matching {
+	void KMPSearch(String pat, String txt)
+	{
+		int M = pat.length();
+		int N = txt.length();
+
+		// create lps[] that will hold the longest
+		// prefix suffix values for pattern
+		int lps[] = new int[M];
+		int j = 0; // index for pat[]
+
+		// Preprocess the pattern (calculate lps[]
+		// array)
+		computeLPSArray(pat, M, lps);
+
+		int i = 0; // index for txt[]
+		while ((N - i) >= (M - j)) {
+			if (pat.charAt(j) == txt.charAt(i)) {
+				j++;
+				i++;
+			}
+			if (j == M) {
+				System.out.println("Found pattern "
+								+ "at index " + (i - j));
+				j = lps[j - 1];
+			}
+
+			// mismatch after j matches
+			else if (i < N
+					&& pat.charAt(j) != txt.charAt(i)) {
+				// Do not match lps[0..lps[j-1]] characters,
+				// they will match anyway
+				if (j != 0)
+					j = lps[j - 1];
+				else
+					i = i + 1;
+			}
+		}
+	}
+
+	void computeLPSArray(String pat, int M, int lps[])
+	{
+		// length of the previous longest prefix suffix
+		int len = 0;
+		int i = 1;
+		lps[0] = 0; // lps[0] is always 0
+
+		// the loop calculates lps[i] for i = 1 to M-1
+		while (i < M) {
+			if (pat.charAt(i) == pat.charAt(len)) {
+				len++;
+				lps[i] = len;
+				i++;
+			}
+			else // (pat[i] != pat[len])
+			{
+				// This is tricky. Consider the example.
+				// AAACAAAA and i = 7. The idea is similar
+				// to search step.
+				if (len != 0) {
+					len = lps[len - 1];
+
+					// Also, note that we do not increment
+					// i here
+				}
+				else // if (len == 0)
+				{
+					lps[i] = len;
+					i++;
+				}
+			}
+		}
+	}
+
+	// Driver code
+	public static void main(String args[])
+	{
+		String txt = "ABABDABACDABABCABAB";
+		String pat = "ABABCABAB";
+		new KMP_String_Matching().KMPSearch(pat, txt);
+	}
+}
+// This code has been contributed by Amit Khandelwal.
+Output
+Found pattern at index 10 
+-------------------------------------------------------------
+merge sort
+-------------------------------------------------------------
+/* C program for Merge Sort */
+#include <stdio.h>
+#include <stdlib.h>
+
+// Merges two subarrays of arr[].
+// First subarray is arr[l..m]
+// Second subarray is arr[m+1..r]
+void merge(int arr[], int l, int m, int r)
+{
+	int i, j, k;
+	int n1 = m - l + 1;
+	int n2 = r - m;
+
+	/* create temp arrays */
+	int L[n1], R[n2];
+
+	/* Copy data to temp arrays L[] and R[] */
+	for (i = 0; i < n1; i++)
+		L[i] = arr[l + i];
+	for (j = 0; j < n2; j++)
+		R[j] = arr[m + 1 + j];
+
+	/* Merge the temp arrays back into arr[l..r]*/
+	i = 0; // Initial index of first subarray
+	j = 0; // Initial index of second subarray
+	k = l; // Initial index of merged subarray
+	while (i < n1 && j < n2) {
+		if (L[i] <= R[j]) {
+			arr[k] = L[i];
+			i++;
+		}
+		else {
+			arr[k] = R[j];
+			j++;
+		}
+		k++;
+	}
+
+	/* Copy the remaining elements of L[], if there
+	are any */
+	while (i < n1) {
+		arr[k] = L[i];
+		i++;
+		k++;
+	}
+
+	/* Copy the remaining elements of R[], if there
+	are any */
+	while (j < n2) {
+		arr[k] = R[j];
+		j++;
+		k++;
+	}
+}
+
+/* l is for left index and r is right index of the
+sub-array of arr to be sorted */
+void mergeSort(int arr[], int l, int r)
+{
+	if (l < r) {
+		// Same as (l+r)/2, but avoids overflow for
+		// large l and h
+		int m = l + (r - l) / 2;
+
+		// Sort first and second halves
+		mergeSort(arr, l, m);
+		mergeSort(arr, m + 1, r);
+
+		merge(arr, l, m, r);
+	}
+}
+
+/* UTILITY FUNCTIONS */
+/* Function to print an array */
+void printArray(int A[], int size)
+{
+	int i;
+	for (i = 0; i < size; i++)
+		printf("%d ", A[i]);
+	printf("\n");
+}
+
+/* Driver code */
+int main()
+{
+	int arr[] = { 12, 11, 13, 5, 6, 7 };
+	int arr_size = sizeof(arr) / sizeof(arr[0]);
+
+	printf("Given array is \n");
+	printArray(arr, arr_size);
+
+	mergeSort(arr, 0, arr_size - 1);
+
+	printf("\nSorted array is \n");
+	printArray(arr, arr_size);
+	return 0;
+}
+---------------------------------------------------------
+quicksort 
+---------------------------------------------------------
+#include<stdio.h>
+void quicksort(int number[25],int first,int last){
+   int i, j, pivot, temp;
+   if(first<last){
+      pivot=first;
+      i=first;
+      j=last;
+      while(i<j){
+         while(number[i]<=number[pivot]&&i<last)
+         i++;
+         while(number[j]>number[pivot])
+         j--;
+         if(i<j){
+            temp=number[i];
+            number[i]=number[j];
+            number[j]=temp;
+         }
+      }
+      temp=number[pivot];
+      number[pivot]=number[j];
+      number[j]=temp;
+      quicksort(number,first,j-1);
+      quicksort(number,j+1,last);
+   }
+}
+int main(){
+   int i, count, number[25];
+   printf("How many elements are u going to enter?: ");
+   scanf("%d",&count);
+   printf("Enter %d elements: ", count);
+   for(i=0;i<count;i++)
+   scanf("%d",&number[i]);
+   quicksort(number,0,count-1);
+   printf("Order of Sorted elements: ");
+   for(i=0;i<count;i++)
+   printf(" %d",number[i]);
+   return 0;
+}
+------------------------------------------------------
+knapsack by greedy(frac)
+------------------------------------------------------
+# include<stdio.h>
+ 
+void knapsack(int n, float weight[], float profit[], float capacity) {
+   float x[20], tp = 0;
+   int i, j, u;
+   u = capacity;
+ 
+   for (i = 0; i < n; i++)
+      x[i] = 0.0;
+ 
+   for (i = 0; i < n; i++) {
+      if (weight[i] > u)
+         break;
+      else {
+         x[i] = 1.0;
+         tp = tp + profit[i];
+         u = u - weight[i];
+      }
+   }
+ 
+   if (i < n)
+      x[i] = u / weight[i];
+ 
+   tp = tp + (x[i] * profit[i]);
+ 
+   printf("\nThe result vector is:- ");
+   for (i = 0; i < n; i++)
+      printf("%f\t", x[i]);
+ 
+   printf("\nMaximum profit is:- %f", tp);
+ 
+}
+ 
+int main() {
+   float weight[20], profit[20], capacity;
+   int num, i, j;
+   float ratio[20], temp;
+ 
+   printf("\nEnter the no. of objects:- ");
+   scanf("%d", &num);
+ 
+   printf("\nEnter the wts and profits of each object:- ");
+   for (i = 0; i < num; i++) {
+      scanf("%f %f", &weight[i], &profit[i]);
+   }
+ 
+   printf("\nEnter the capacityacity of knapsack:- ");
+   scanf("%f", &capacity);
+ 
+   for (i = 0; i < num; i++) {
+      ratio[i] = profit[i] / weight[i];
+   }
+ 
+   for (i = 0; i < num; i++) {
+      for (j = i + 1; j < num; j++) {
+         if (ratio[i] < ratio[j]) {
+            temp = ratio[j];
+            ratio[j] = ratio[i];
+            ratio[i] = temp;
+ 
+            temp = weight[j];
+            weight[j] = weight[i];
+            weight[i] = temp;
+ 
+            temp = profit[j];
+            profit[j] = profit[i];
+            profit[i] = temp;
+         }
+      }
+   }
+ 
+   knapsack(num, weight, profit, capacity);
+   return(0);
+}
+----------------------------------------------------------
+0/1 knapsack
+----------------------------------------------------------
+/* A Naive recursive implementation
+of 0-1 Knapsack problem */
+#include <stdio.h>
+
+// A utility function that returns
+// maximum of two integers
+int max(int a, int b) { return (a > b) ? a : b; }
+
+// Returns the maximum value that can be
+// put in a knapsack of capacity W
+int knapSack(int W, int wt[], int val[], int n)
+{
+	// Base Case
+	if (n == 0 || W == 0)
+		return 0;
+
+	// If weight of the nth item is more than
+	// Knapsack capacity W, then this item cannot
+	// be included in the optimal solution
+	if (wt[n - 1] > W)
+		return knapSack(W, wt, val, n - 1);
+
+	// Return the maximum of two cases:
+	// (1) nth item included
+	// (2) not included
+	else
+		return max(
+			val[n - 1]
+				+ knapSack(W - wt[n - 1],
+						wt, val, n - 1),
+			knapSack(W, wt, val, n - 1));
+}
+
+// Driver program to test above function
+int main()
+{
+	int val[] = { 60, 100, 120 };
+	int wt[] = { 10, 20, 30 };
+	int W = 50;
+	int n = sizeof(val) / sizeof(val[0]);
+	printf("%d", knapSack(W, wt, val, n));
+	return 0;
+}
+----------------------------------------------------------------------------------------
+lab 7 
+
+inlab2
+=================================================
+Maximum profit
+
+public class MaximumProfitJobScheduling {
+    public class Task {
+        public int start;
+        public int end;
+        public int profit;
+
+        public Task(int start, int end, int profit) {
+            this.start = start;
+            this.end = end;
+            this.profit = profit;
+        }
+    }
+
+    public static void main(String[] args) {
+       /* MaximumProfitJobScheduling maximumProfitJobScheduling = new MaximumProfitJobScheduling();
+        int result = maximumProfitJobScheduling.jobScheduling(
+                new int[]{1, 2, 3, 3},
+                new int[]{3, 4, 5, 6},
+                new int[]{50, 10, 40, 70});
+        System.out.println(result);*/
+
+       /* MaximumProfitJobScheduling maximumProfitJobScheduling = new MaximumProfitJobScheduling();
+        int result = maximumProfitJobScheduling.jobScheduling(
+                new int[]{1, 2, 3, 4, 6},
+                new int[]{3, 5, 10, 6, 9},
+                new int[]{20, 20, 100, 70, 60});
+        System.out.println(result);*/
+        MaximumProfitJobScheduling maximumProfitJobScheduling = new MaximumProfitJobScheduling();
+        int result = maximumProfitJobScheduling.jobScheduling(
+                new int[]{4, 2, 4, 8, 2},
+                new int[]{5, 5, 5, 10, 8},
+                new int[]{1, 2, 8, 10, 4});
+        System.out.println(result);
+    }
+
+    public int jobScheduling(int[] startTime, int[] endTime, int[] profit) {
+        List<Task> tasks = new ArrayList<>();
+        for (int i = 0; i < profit.length; i++) {
+            tasks.add(new Task(startTime[i], endTime[i], profit[i]));
+        }
+        Collections.sort(tasks, (u, v) -> {
+            if (u.end > v.end) return 1;
+            else if (u.end < v.end) return -1;
+            else return 0;
+        });
+
+        Map<Integer, List<Task>> map = new HashMap<>();
+        int maxTask = 0;
+        for (Task t : tasks) {
+            maxTask = Math.max(maxTask, t.end);
+            map.compute(t.end, (k, v) -> v == null ? new ArrayList<Task>() : v).add(t);
+        }
+        int[] cache = new int[maxTask + 1];
+
+        int maxProfit = 0;
+        for (int i = 1; i < cache.length; i++) {
+            List<Task> tList = map.get(i);
+            if (tList == null)
+                cache[i] = cache[i - 1];
+            else {
+                cache[i] = cache[i - 1];
+                for (Task t : tList) {
+                    cache[i] = Math.max(cache[i], t.profit + cache[t.start]);
+                }
+            }
+            maxProfit = Math.max(maxProfit, cache[i]);
+        }
+        return maxProfit;
+    }
+}
+
+===========================================================================================================
+lab 8
+
+inlab 1
+
+Maximum flow
+=============
+
+/ Ford - Fulkerson algorith in C
+
+#include <stdio.h>
+
+#define A 0
+#define B 1
+#define C 2
+#define MAX_NODES 1000
+#define O 1000000000
+
+int n;
+int e;
+int capacity[MAX_NODES][MAX_NODES];
+int flow[MAX_NODES][MAX_NODES];
+int color[MAX_NODES];
+int pred[MAX_NODES];
+
+int min(int x, int y) {
+  return x < y ? x : y;
+}
+
+int head, tail;
+int q[MAX_NODES + 2];
+
+void enqueue(int x) {
+  q[tail] = x;
+  tail++;
+  color[x] = B;
+}
+
+int dequeue() {
+  int x = q[head];
+  head++;
+  color[x] = C;
+  return x;
+}
+int bfs(int start, int target) {
+  int u, v;
+  for (u = 0; u < n; u++) {
+    color[u] = A;
+  }
+  head = tail = 0;
+  enqueue(start);
+  pred[start] = -1;
+  while (head != tail) {
+    u = dequeue();
+    for (v = 0; v < n; v++) {
+      if (color[v] == A && capacity[u][v] - flow[u][v] > 0) {
+        enqueue(v);
+        pred[v] = u;
+      }
+    }
+  }
+  return color[target] == C;
+}
+int fordFulkerson(int source, int sink) {
+  int i, j, u;
+  int max_flow = 0;
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < n; j++) {
+      flow[i][j] = 0;
+    }
+  }
+  while (bfs(source, sink)) {
+    int increment = O;
+    for (u = n - 1; pred[u] >= 0; u = pred[u]) {
+      increment = min(increment, capacity[pred[u]][u] - flow[pred[u]][u]);
+    }
+    for (u = n - 1; pred[u] >= 0; u = pred[u]) {
+      flow[pred[u]][u] += increment;
+      flow[u][pred[u]] -= increment;
+    }
+    max_flow += increment;
+  }
+  return max_flow;
+}
+
+int main() {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      capacity[i][j] = 0;
+    }
+  }
+  n = 6;
+  e = 7;
+
+  capacity[0][1] = 8;
+  capacity[0][4] = 3;
+  capacity[1][2] = 9;
+  capacity[2][4] = 7;
+  capacity[2][5] = 2;
+  capacity[3][5] = 5;
+  capacity[4][2] = 7;
+  capacity[4][3] = 4;
+
+  int s = 0, t = 5;
+  printf("Max Flow: %d\n", fordFulkerson(s, t));
+}
+
+============================================================================================
+lab 8, inlab 2
+
+MIN CUT
+=======
+import java.util.LinkedList; 
+import java.util.Queue; 
+  
+public class Graph {  
+    private static boolean bfs(int[][] rGraph, int s, 
+                                int t, int[] parent) {    
+        boolean[] visited = new boolean[rGraph.length];       
+        Queue<Integer> q = new LinkedList<Integer>(); 
+        q.add(s); 
+        visited[s] = true; 
+        parent[s] = -1;     
+        while (!q.isEmpty()) { 
+            int v = q.poll(); 
+            for (int i = 0; i < rGraph.length; i++) { 
+                if (rGraph[v][i] > 0 && !visited[i]) { 
+                    q.offer(i); 
+                    visited[i] = true; 
+                    parent[i] = v; 
+                } 
+            } 
+        } 
+        return (visited[t] == true); 
+    } 
+    private static void dfs(int[][] rGraph, int s, 
+                                boolean[] visited) { 
+        visited[s] = true; 
+        for (int i = 0; i < rGraph.length; i++) { 
+                if (rGraph[s][i] > 0 && !visited[i]) { 
+                    dfs(rGraph, i, visited); 
+                } 
+        } 
+    } 
+    private static void minCut(int[][] graph, int s, int t) { 
+        int u,v; 
+        int[][] rGraph = new int[graph.length][graph.length];  
+        for (int i = 0; i < graph.length; i++) { 
+            for (int j = 0; j < graph.length; j++) { 
+                rGraph[i][j] = graph[i][j]; 
+            } 
+        } 
+        int[] parent = new int[graph.length]; 
+        while (bfs(rGraph, s, t, parent)) {  
+            int pathFlow = Integer.MAX_VALUE;          
+            for (v = t; v != s; v = parent[v]) { 
+                u = parent[v]; 
+                pathFlow = Math.min(pathFlow, rGraph[u][v]); 
+            }
+            for (v = t; v != s; v = parent[v]) { 
+                u = parent[v]; 
+                rGraph[u][v] = rGraph[u][v] - pathFlow; 
+                rGraph[v][u] = rGraph[v][u] + pathFlow; 
+            } 
+        }  
+        boolean[] isVisited = new boolean[graph.length];      
+        dfs(rGraph, s, isVisited); 
+        for (int i = 0; i < graph.length; i++) { 
+            for (int j = 0; j < graph.length; j++) { 
+                if (graph[i][j] > 0 && isVisited[i] && !isVisited[j]) { 
+                    System.out.println(i + " - " + j); 
+                } 
+            } 
+        } 
+    } 
+    public static void main(String args[]) { 
+        int graph[][] = { {0, 16, 13, 0, 0, 0}, 
+                {0, 0, 10, 12, 0, 0}, 
+                {0, 4, 0, 0, 14, 0}, 
+                {0, 0, 9, 0, 0, 20}, 
+                {0, 0, 0, 7, 0, 4}, 
+                {0, 0, 0, 0, 0, 0} 
+            }; 
+        minCut(graph, 0, 5); 
+    } 
+} 
+
+========================================================================================
+LAB 09
+
+INLAB2
+
+M-COLOURING
+===========
+
+#include <stdio.h>
+    int V;
+ 
+ 
+    int isSafe(int v, int graph[V][V],int color[], int c) 
+    { 
+        for (int i = 0; i < V; i++) 
+            if ( 
+                graph[v][i] && c == color[i]) 
+                return 0; 
+        return 1; 
+    } 
+ 
+ 
+    int colour(int graph[V][V], int m,int color[], int v) 
+    { 
+ 
+        if (v == V) 
+            return 1; 
+ 
+        for (int c = 1; c <= m; c++) 
+        { 
+            if (isSafe( 
+                    v, graph, color, c)) { 
+                color[v] = c; 
+ 
+ 
+                if ( colour(graph, m, color, v + 1)== 1) 
+                    return 1; 
+ 
+                color[v] = 0; 
+            } 
+        } 
+ 
+        return 0; 
+    } 
+ 
+ 
+    int graphColoring(int graph[V][V], int m) 
+    { 
+ 
+        int color[V]; 
+        for (int i = 0; i < V; i++) 
+            color[i] = 0; 
+ 
+ 
+        if ( 
+            colour(graph, m, color, 0)== 0) { 
+            return 0; 
+        } 
+ 
+        return 1; 
+    } 
+ 
+ 
+    int main() 
+    { 
+        int t;
+        scanf("%d",&t);
+        while(t--)
+        {
+          int e;
+          scanf("%d %d",&V,&e);
+          int graph[V][V];
+          for(int i=0;i<V;i++)
+          {
+            for(int j=0;j<V;j++)
+             graph[i][j]=0;
+          }
+          while(e--)
+          {
+            int u,v;
+            scanf("%d %d",&u,&v);
+            graph[u][v]=1;
+            graph[v][u]=1;
+          }
+          int m; // Number of colors 
+          scanf("%d",&m);
+          printf("%d\n",graphColoring(graph, m)); 
+        }
+        return 0; 
+    } 
+
+=========================================================================
+
+LAB 09 
+INLAB 1
+
+N-QUEENS
+==========
+#define N 4
+#include <stdbool.h>
+#include <stdio.h>
+void printSolution(int board[N][N])
+{
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++)
+            printf(" %d ", board[i][j]);
+        printf("\n");
+    }
+}
+bool isSafe(int board[N][N], int row, int col)
+{
+    int i, j;
+    for (i = 0; i < col; i++)
+        if (board[row][i])
+            return false;
+    for (i = row, j = col; i >= 0 && j >= 0; i--, j--)
+        if (board[i][j])
+            return false;
+    for (i = row, j = col; j >= 0 && i < N; i++, j--)
+        if (board[i][j])
+            return false;
+    return true;
+}
+bool solveNQUtil(int board[N][N], int col)
+{
+    if (col >= N)
+        return true;
+    for (int i = 0; i < N; i++) {
+        if (isSafe(board, i, col)) {
+            board[i][col] = 1
+            if (solveNQUtil(board, col + 1))
+                return true;
+            board[i][col] = 0; // BACKTRACK
+        }
+    }
+    return false;
+}
+bool solveNQ()
+{
+    int board[N][N] = { { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 } };
+  
+    if (solveNQUtil(board, 0) == false) {
+        printf("Solution does not exist");
+        return false;
+    }
+  
+    printSolution(board);
+    return true;
+}
+int main()
+{
+    solveNQ();
+    return 0;
+}
+=============================================================================
+ LAB 11
+INLAB 1
+=========
+import java.io.*;
+import java.util.*;
+class Node {
+  
+    int soln[];
+    int level;
+    ArrayList<Node> child;
+    Node parent;
+  
+    Node(Node parent, int level, int N)
+    {
+        this.parent = parent;
+        this.level = level;
+        this.soln = new int[N];
+    }
+}
+class GFG {
+  
+    static int N;
+    public static Queue<Node> Q;
+    public static void generate(Node n)
+    {
+        if (n.level == N) {
+            for (int i = 0; i <= N - 1; i++) {
+                System.out.print(n.soln[i]);
+            }
+            System.out.println();
+        }
+        else {
+            n.child = new ArrayList<Node>();
+  
+            int l = n.level;
+            for (int i = 0; i <= 1; i++) {
+                Node x = new Node(n, l + 1, N);
+                for (int k = 0; k < l; k++) {
+                    x.soln[k] = n.soln[k];
+                }
+                x.soln[l] = i;
+                n.child.add(x);
+                Q.add(x);
+            }
+        }
+    }
+    public static void main(String args[])
+    {
+        N = 3;
+        Node root = new Node(null, 0, N);
+        Q = new LinkedList<Node>();
+        Q.add(root);
+        while (Q.size() != 0) {
+            Node E = Q.poll();
+            generate(E);
+        }
+    }
+}
+=====================================================================================================
+LAB 11
+INLAB 2
+
+
+import java.io.*;
+import java.util.Arrays;
+import java.lang.Math;
+ 
+class GFG{
+static void find(int[] arr, int n, int k)
+{
+    Arrays.sort(arr);
+    int b = (int)Math.ceil(n / k * 1.0);
+    int min_sum = 0, max_sum = 0;
+ 
+    for(int i = 0; i < b; i++)
+        min_sum += arr[i];
+    for(int i = 2; i < arr.length; i++)
+        max_sum += arr[i];
+    System.out.println("minimum " + min_sum);
+    System.out.println("maximum " + max_sum);
+}
+public static void main (String[] args)
+{
+    int[] arr = { 3, 2, 1, 4 };
+    int n = arr.length;
+    int k = 2;
+ 
+    // Function call
+    find(arr, n, k);
+}
+}
+==================================================================================================
+INLAB-7-1:
+import java.util.Stack;
+class Main {
+// Function to check if a string is a subsequence of another string
+static boolean checkForSubsequence(String s1, String s2)
+{
+// Declaring a stack to insert the characters of the second string i.e. s2
+Stack<Character> stack = new Stack<Character>();
+
+// Inserting all the characters of s2 into the stack
+for(int i = 0; i < s1.length(); i++)
+{
+stack.push(s1.charAt(i));
+}
+for(int i = (int)s2.length() - 1; i >= 0; i--)
+{
+if(stack.isEmpty()){
+return true;
+}
+
+if(s2.charAt(i) == stack.peek()){
+stack.pop();
+}
+}
+
+if(stack.isEmpty()){
+return true;
+}
+return false;
+
+
+}
+public static void main(String args[]) {
+String s1 = "KOTA";
+             String s2 = "KOTAYAM";
+
+
+if(checkForSubsequence(s1, s2)){
+System.out.println("Yes " + s1 + " is a subsequence of " + s2);
+}
+else{
+System.out.println("No " + s1 + " is not a subsequence of "  + s2);
+      }
+}
+}
+-------------------------------------------------------------------------------------
+INLAB-7-3:
+
+/* Java program to determine if binary tree is
+height balanced or not */
+class Node {
+	int data;
+	Node left, right;
+	Node(int d)
+	{
+		data = d;
+		left = right = null;
+	}
+}
+
+class BinaryTree {
+	Node root;
+	boolean isBalanced(Node node)
+	{
+		int lh;
+		int rh;
+		if (node == null)
+			return true;
+		lh = height(node.left);
+		rh = height(node.right);
+
+		if (Math.abs(lh - rh) <= 1 && isBalanced(node.left)
+			&& isBalanced(node.right))
+			return true;
+		return false;
+	}
+	int height(Node node)
+	{
+		/* base case tree is empty */
+		if (node == null)
+			return 0;
+
+		/* If tree is not empty then height = 1 + max of
+		left height and right heights */
+		return 1
+			+ Math.max(height(node.left),
+					height(node.right));
+	}
+
+	public static void main(String args[])
+	{
+		BinaryTree tree = new BinaryTree();
+		tree.root = new Node(1);
+		tree.root.left = new Node(2);
+		tree.root.right = new Node(3);
+		tree.root.left.left = new Node(4);
+		tree.root.left.right = new Node(5);
+		tree.root.left.left.left = new Node(8);
+
+		if (tree.isBalanced(tree.root))
+			System.out.println("Tree is balanced");
+		else
+			System.out.println("Tree is not balanced");
+	}
+}
+------------------------------------------------------------------------------------
+POSTLAB-7-1
+
+// A Dynamic Programming based Java
+// Program for the Egg Dropping Puzzle
+class LPS
+{
+	static int max (int x, int y) { return (x > y)? x : y; }
+	static int lps(String seq)
+	{
+	int n = seq.length();
+	int i, j, cl;
+	int L[][] = new int[n][n];
+	for (i = 0; i < n; i++)
+		L[i][i] = 1;
+		// cl is length of substring
+		for (cl=2; cl<=n; cl++)
+		{
+			for (i=0; i<n-cl+1; i++)
+			{
+				j = i+cl-1;
+				if (seq.charAt(i) == seq.charAt(j) && cl == 2)
+				L[i][j] = 2;
+				else if (seq.charAt(i) == seq.charAt(j))
+				L[i][j] = L[i+1][j-1] + 2;
+				else
+				L[i][j] = max(L[i][j-1], L[i+1][j]);
+			}
+		}
+			
+		return L[0][n-1];
+	}
+	public static void main(String args[])
+	{
+		String seq = "GEEKSFORGEEKS";
+		int n = seq.length();
+		System.out.println("The length of the LPS is "+ lps(seq));
+	}
+}
+-------------------------------------------------------------------------------------------------
+INLAB-8-1:
+
+// Java program for implementation of Ford Fulkerson
+// algorithm
+import java.io.*;
+import java.lang.*;
+import java.util.*;
+import java.util.LinkedList;
+
+class MaxFlow {
+	static final int V = 6;
+	boolean bfs(int rGraph[][], int s, int t, int parent[])
+	{
+		boolean visited[] = new boolean[V];
+		for (int i = 0; i < V; ++i)
+			visited[i] = false;
+		LinkedList<Integer> queue
+			= new LinkedList<Integer>();
+		queue.add(s);
+		visited[s] = true;
+		parent[s] = -1;
+		while (queue.size() != 0) {
+			int u = queue.poll();
+			for (int v = 0; v < V; v++) {
+				if (visited[v] == false
+					&& rGraph[u][v] > 0) {
+					if (v == t) {
+						parent[v] = u;
+						return true;
+					}
+					queue.add(v);
+					parent[v] = u;
+					visited[v] = true;
+				}
+			}
+		}
+	}
+	int fordFulkerson(int graph[][], int s, int t)
+	{
+		int u, v;
+		int rGraph[][] = new int[V][V];
+		for (u = 0; u < V; u++)
+			for (v = 0; v < V; v++)
+				rGraph[u][v] = graph[u][v];
+		int parent[] = new int[V];
+		int max_flow = 0; // There is no flow initially
+		while (bfs(rGraph, s, t, parent)) {
+			int path_flow = Integer.MAX_VALUE;
+			for (v = t; v != s; v = parent[v]) {
+				u = parent[v];
+				path_flow
+					= Math.min(path_flow, rGraph[u][v]);
+			}
+			for (v = t; v != s; v = parent[v]) {
+				u = parent[v];
+				rGraph[u][v] -= path_flow;
+				rGraph[v][u] += path_flow;
+			}
+			max_flow += path_flow;
+		}
+		return max_flow;
+	}
+	public static void main(String[] args)
+		throws java.lang.Exception
+	{
+		int graph[][] = new int[][] {
+			{ 0, 16, 13, 0, 0, 0 }, { 0, 0, 10, 12, 0, 0 },
+			{ 0, 4, 0, 0, 14, 0 }, { 0, 0, 9, 0, 0, 20 },
+			{ 0, 0, 0, 7, 0, 4 }, { 0, 0, 0, 0, 0, 0 }
+		};
+		MaxFlow m = new MaxFlow();
+
+		System.out.println("The maximum possible flow is "
+						+ m.fordFulkerson(graph, 0, 5));
+	}
+}
+--------------------------------------------------------------------------------------------------
+INLAB-8-2:
+
+// Java program for finding min-cut in the given graph
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Graph {
+	private static boolean bfs(int[][] rGraph, int s,
+								int t, int[] parent) {
+		boolean[] visited = new boolean[rGraph.length];	
+		Queue<Integer> q = new LinkedList<Integer>();
+		q.add(s);
+		visited[s] = true;
+		parent[s] = -1;
+		while (!q.isEmpty()) {
+			int v = q.poll();
+			for (int i = 0; i < rGraph.length; i++) {
+				if (rGraph[v][i] > 0 && !visited[i]) {
+					q.offer(i);
+					visited[i] = true;
+					parent[i] = v;
+				}
+			}
+		}
+		return (visited[t] == true);
+	}
+	private static void dfs(int[][] rGraph, int s,
+								boolean[] visited) {
+		visited[s] = true;
+		for (int i = 0; i < rGraph.length; i++) {
+				if (rGraph[s][i] > 0 && !visited[i]) {
+					dfs(rGraph, i, visited);
+				}
+		}
+	}
+	private static void minCut(int[][] graph, int s, int t) {
+		int u,v;
+		int[][] rGraph = new int[graph.length][graph.length];
+		for (int i = 0; i < graph.length; i++) {
+			for (int j = 0; j < graph.length; j++) {
+				rGraph[i][j] = graph[i][j];
+			}
+		}
+		int[] parent = new int[graph.length];	
+		while (bfs(rGraph, s, t, parent)) {
+			int pathFlow = Integer.MAX_VALUE;		
+			for (v = t; v != s; v = parent[v]) {
+				u = parent[v];
+				pathFlow = Math.min(pathFlow, rGraph[u][v]);
+			}
+			for (v = t; v != s; v = parent[v]) {
+				u = parent[v];
+				rGraph[u][v] = rGraph[u][v] - pathFlow;
+				rGraph[v][u] = rGraph[v][u] + pathFlow;
+			}
+		}	
+		boolean[] isVisited = new boolean[graph.length];	
+		dfs(rGraph, s, isVisited);
+		for (int i = 0; i < graph.length; i++) {
+			for (int j = 0; j < graph.length; j++) {
+				if (graph[i][j] > 0 && isVisited[i] && !isVisited[j]) {
+					System.out.println(i + " - " + j);
+				}
+			}
+		}
+	}
+	public static void main(String args[]) {
+		int graph[][] = { {0, 16, 13, 0, 0, 0},
+				{0, 0, 10, 12, 0, 0},
+				{0, 4, 0, 0, 14, 0},
+				{0, 0, 9, 0, 0, 20},
+				{0, 0, 0, 7, 0, 4},
+				{0, 0, 0, 0, 0, 0}
+			};
+		minCut(graph, 0, 5);
+	}
+}
+-----------------------------------------------------------------------------------------------------------
+INLAB-9-1:
+
+
+/* C program to solve N Queen Problem using
+backtracking */
+#define N 4
+#include <stdbool.h>
+#include <stdio.h>
+void printSolution(int board[N][N])
+{
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++)
+			printf(" %d ", board[i][j]);
+		printf("\n");
+	}
+}
+bool isSafe(int board[N][N], int row, int col)
+{
+	int i, j;
+	for (i = 0; i < col; i++)
+		if (board[row][i])
+			return false;
+	for (i = row, j = col; i >= 0 && j >= 0; i--, j--)
+		if (board[i][j])
+			return false;
+	for (i = row, j = col; j >= 0 && i < N; i++, j--)
+		if (board[i][j])
+			return false;
+
+	return true;
+}
+bool solveNQUtil(int board[N][N], int col)
+{
+	if (col >= N)
+		return true;
+	for (int i = 0; i < N; i++) {
+		if (isSafe(board, i, col)) {
+			board[i][col] = 1;
+			if (solveNQUtil(board, col + 1))
+				return true;
+			board[i][col] = 0;
+		}
+	}
+	return false;
+}
+bool solveNQ()
+{
+	int board[N][N] = { { 0, 0, 0, 0 },
+						{ 0, 0, 0, 0 },
+						{ 0, 0, 0, 0 },
+						{ 0, 0, 0, 0 } };
+
+	if (solveNQUtil(board, 0) == false) {
+		printf("Solution does not exist");
+		return false;
+	}
+
+	printSolution(board);
+	return true;
+}
+int main()
+{
+	solveNQ();
+	return 0;
+}
+---------------------------------------------------------------------------------------------
+INLAB-9-2:
+
+// C program for solution of M
+// Coloring problem using backtracking
+
+#include <stdbool.h>
+#include <stdio.h>
+
+// Number of vertices in the graph
+#define V 4
+
+void printSolution(int color[]);
+bool isSafe(int v, bool graph[V][V], int color[], int c)
+{
+	for (int i = 0; i < V; i++)
+		if (graph[v][i] && c == color[i])
+			return false;
+	return true;
+}
+bool graphColoringUtil(bool graph[V][V], int m, int color[],
+					int v)
+{
+	if (v == V)
+		return true;
+	for (int c = 1; c <= m; c++) {
+		if (isSafe(v, graph, color, c)) {
+			color[v] = c;
+			if (graphColoringUtil(graph, m, color, v + 1)
+				== true)
+				return true;
+			color[v] = 0;
+		}
+	}
+	return false;
+}
+bool graphColoring(bool graph[V][V], int m)
+{
+	int color[V];
+	for (int i = 0; i < V; i++)
+		color[i] = 0;
+	if (graphColoringUtil(graph, m, color, 0) == false) {
+		printf("Solution does not exist");
+		return false;
+	}
+	printSolution(color);
+	return true;
+}
+void printSolution(int color[])
+{
+	printf("Solution Exists:"
+		" Following are the assigned colors \n");
+	for (int i = 0; i < V; i++)
+		printf(" %d ", color[i]);
+	printf("\n");
+}
+int main()
+{
+	bool graph[V][V] = {
+		{ 0, 1, 1, 1 },
+		{ 1, 0, 1, 0 },
+		{ 1, 1, 0, 1 },
+		{ 1, 0, 1, 0 },
+	};
+	int m = 3;
+	graphColoring(graph, m);
+	return 0;
+}
+--------------------------------------------------------------------------------------
+
+INLAB-11-1:
+
+// Java Program to generate
+// Binary Strings using Branch and Bound
+
+import java.io.*;
+import java.util.*;
+class Node {
+
+	int soln[];
+	int level;
+	ArrayList<Node> child;
+	Node parent;
+
+	Node(Node parent, int level, int N)
+	{
+		this.parent = parent;
+		this.level = level;
+		this.soln = new int[N];
+	}
+}
+
+class GFG {
+
+	static int N;
+	public static Queue<Node> Q;
+	public static void generate(Node n)
+	{
+		if (n.level == N) {
+			for (int i = 0; i <= N - 1; i++) {
+				System.out.print(n.soln[i]);
+			}
+			System.out.println();
+		}
+		else {
+			n.child = new ArrayList<Node>();
+
+			int l = n.level;
+			for (int i = 0; i <= 1; i++) {
+				Node x = new Node(n, l + 1, N);
+				for (int k = 0; k < l; k++) {
+					x.soln[k] = n.soln[k];
+				}
+				x.soln[l] = i;
+				n.child.add(x);
+				Q.add(x);
+			}
+		}
+	}
+	public static void main(String args[])
+	{
+		N = 3;
+		Node root = new Node(null, 0, N);
+		Q = new LinkedList<Node>();
+		Q.add(root);
+		while (Q.size() != 0) {
+			Node E = Q.poll();
+			generate(E);
+		}
+	}
+}
+----------------------------------------------------------------------------------------------
+INLAB-13-1
+
+OBST DYnamaic Programming
+
+
+// Dynamic Programming Java code for Optimal Binary Search
+// Tree Problem
+public class Optimal_BST2 {
+	static int optimalSearchTree(int keys[], int freq[], int n) {
+		int cost[][] = new int[n + 1][n + 1];
+		for (int i = 0; i < n; i++)
+			cost[i][i] = freq[i];
+		for (int L = 2; L <= n; L++) {
+			for (int i = 0; i <= n - L + 1; i++) {
+				int j = i + L - 1;
+				cost[i][j] = Integer.MAX_VALUE;
+				int off_set_sum = sum(freq, i, j);
+				for (int r = i; r <= j; r++) {
+					int c = ((r > i) ? cost[i][r - 1] : 0)
+							+ ((r < j) ? cost[r + 1][j] : 0) + off_set_sum;
+					if (c < cost[i][j])
+						cost[i][j] = c;
+				}
+			}
+		}
+		return cost[0][n - 1];
+	}
+	static int sum(int freq[], int i, int j) {
+		int s = 0;
+		for (int k = i; k <= j; k++) {
+			if (k >= freq.length)
+				continue;
+			s += freq[k];
+		}
+		return s;
+	}
+
+	public static void main(String[] args) {
+		
+		int keys[] = { 10, 12, 20 };
+		int freq[] = { 34, 8, 50 };
+		int n = keys.length;
+		System.out.println("Cost of Optimal BST is "
+				+ optimalSearchTree(keys, freq, n));
+	}
+
+}
+-----------------------------------------------------------------------------------
+
+
+
+
