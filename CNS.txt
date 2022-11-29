@@ -1,0 +1,843 @@
+1. Bit stuffing
+---------------------------------------------------------------------------------------------------------------------------------------
+#include <stdio.h>
+#include <string.h>
+ 
+// Function for bit stuffing
+void bitStuffing(int N, int arr[])
+{
+    // Stores the stuffed array
+    int brr[30];
+ 
+    // Variables to traverse arrays
+    int i, j, k;
+    i = 0;
+    j = 0;
+ 
+    // Stores the count of consecutive ones
+    int count = 1;
+ 
+    // Loop to traverse in the range [0, N)
+    while (i < N) {
+ 
+        // If the current bit is a set bit
+        if (arr[i] == 1) {
+ 
+            // Insert into array brr[]
+            brr[j] = arr[i];
+ 
+            // Loop to check for
+            // next 5 bits
+            for (k = i + 1;
+                 arr[k] == 1
+                 && k < N
+                 && count < 5;
+                 k++) {
+                j++;
+                brr[j] = arr[k];
+                count++;
+ 
+                // If 5 consecutive set bits
+                // are found insert a 0 bit
+                if (count == 5) {
+                    j++;
+                    brr[j] = 0;
+                }
+                i = k;
+            }
+        }
+ 
+        // Otherwise insert arr[i] into
+        // the array brr[]
+        else {
+            brr[j] = arr[i];
+        }
+        i++;
+        j++;
+    }
+ 
+    // Print Answer
+    for (i = 0; i < j; i++)
+        printf("%d", brr[i]);
+}
+int main()
+{
+    int N,i;
+    printf("Enter........");
+    scanf("%d",&N);
+    int arr[N];
+    for(i=0;i<N;i++)
+    	scanf("%d",&arr[i]);
+    bitStuffing(N, arr);
+    return 0;
+}
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+2. Character count byte stuffing:
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+a=input("Enter Data")
+i=0
+c=len(a)+1
+b=str(c)+a
+print("The Data after Charecter Count : ",b)
+flag=input("Enter Flag value")
+esc=input("Enter Escape Value")
+while(i<len(a)):
+    if a[i]==flag or a[i]==esc:
+        a=a[:i]+esc+a[i:]
+        i+=1
+    i+=1
+print("The Data After Byte Stuffing is: ",flag+a+flag)
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+3. CRC
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+def xor(a, b):
+    result = []
+    for i in range(1, len(b)):
+        if a[i] == b[i]:
+            result.append('0')
+        else:
+            result.append('1')
+    return ''.join(result)
+def mod2div(dividend, divisor):
+    pick = len(divisor)
+    tmp = dividend[0 : pick]
+    while pick < len(dividend):
+        if tmp[0] == '1':
+            tmp = xor(divisor, tmp) + dividend[pick]
+        else:
+            tmp = xor('0'*pick, tmp) + dividend[pick]
+        pick += 1
+    if tmp[0] == '1':
+        tmp = xor(divisor, tmp)
+    else:
+        tmp = xor('0'*pick, tmp)
+    checkword = tmp
+    return checkword
+def encodeData(data, key):
+    l_key = len(key)
+    appended_data = data + '0'*(l_key-1)
+    remainder = mod2div(appended_data, key)
+    codeword = data + remainder
+    print("Remainder : ", remainder)
+    print("Encoded Data (Data + Remainder) : ",
+          codeword)
+data =input("Enter Data : ")
+key = input("Enter Key(Polynomial Key) : ")
+encodeData(data, key)
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+4. Djikstra
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+class Graph():
+    def __init__(self, vertices):
+        self.V = vertices
+        self.graph = [[0 for column in range(vertices)]
+                      for row in range(vertices)]
+    def printSolution(self, dist):
+        print("Vertex \t Distance from Source")
+        for node in range(self.V):
+            print(node, "\t\t", dist[node])
+    def minDistance(self, dist, sptSet):
+        min = 1e7
+        for v in range(self.V):
+            if dist[v] < min and sptSet[v] == False:
+                min = dist[v]
+                min_index = v
+        return min_index
+    def dijkstra(self, src):
+        dist = [1e7] * self.V
+        dist[src] = 0
+        sptSet = [False] * self.V
+        for cout in range(self.V):
+            u = self.minDistance(dist, sptSet)
+            sptSet[u] = True
+            for v in range(self.V):
+                if (self.graph[u][v] > 0 and
+                   sptSet[v] == False and
+                   dist[v] > dist[u] + self.graph[u][v]):
+                    dist[v] = dist[u] + self.graph[u][v]
+        self.printSolution(dist)
+g = Graph(9)
+g.graph = [[0, 4, 0, 0, 0, 0, 0, 8, 0],
+           [4, 0, 8, 0, 0, 0, 0, 11, 0],
+           [0, 8, 0, 7, 0, 4, 0, 0, 2],
+           [0, 0, 7, 0, 9, 14, 0, 0, 0],
+           [0, 0, 0, 9, 0, 10, 0, 0, 0],
+           [0, 0, 4, 14, 10, 0, 2, 0, 0],
+           [0, 0, 0, 0, 0, 2, 0, 1, 6],
+           [8, 11, 0, 0, 0, 0, 1, 0, 7],
+           [0, 0, 2, 0, 0, 0, 6, 7, 0]
+           ]
+ 
+g.dijkstra(0)
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+class Graph:
+    def __init__(self):
+        # dictionary containing keys that map to the corresponding vertex object
+        self.vertices = {}
+ 
+    def add_vertex(self, key):
+        """Add a vertex with the given key to the graph."""
+        vertex = Vertex(key)
+        self.vertices[key] = vertex
+ 
+    def get_vertex(self, key):
+        """Return vertex object with the corresponding key."""
+        return self.vertices[key]
+ 
+    def __contains__(self, key):
+        return key in self.vertices
+ 
+    def add_edge(self, src_key, dest_key, weight=1):
+        """Add edge from src_key to dest_key with given weight."""
+        self.vertices[src_key].add_neighbour(self.vertices[dest_key], weight)
+ 
+    def does_edge_exist(self, src_key, dest_key):
+        """Return True if there is an edge from src_key to dest_key."""
+        return self.vertices[src_key].does_it_point_to(self.vertices[dest_key])
+ 
+    def __iter__(self):
+        return iter(self.vertices.values())
+ 
+ 
+class Vertex:
+    def __init__(self, key):
+        self.key = key
+        self.points_to = {}
+ 
+    def get_key(self):
+        """Return key corresponding to this vertex object."""
+        return self.key
+ 
+    def add_neighbour(self, dest, weight):
+        """Make this vertex point to dest with given edge weight."""
+        self.points_to[dest] = weight
+ 
+    def get_neighbours(self):
+        """Return all vertices pointed to by this vertex."""
+        return self.points_to.keys()
+ 
+    def get_weight(self, dest):
+        """Get weight of edge from this vertex to dest."""
+        return self.points_to[dest]
+ 
+    def does_it_point_to(self, dest):
+        """Return True if this vertex points to dest."""
+        return dest in self.points_to
+ 
+ 
+def dijkstra(g, source):
+    """Return distance where distance[v] is min distance from source to v.
+ 
+    This will return a dictionary distance.
+ 
+    g is a Graph object.
+    source is a Vertex object in g.
+    """
+    unvisited = set(g)
+    distance = dict.fromkeys(g, float('inf'))
+    distance[source] = 0
+ 
+    while unvisited != set():
+        # find vertex with minimum distance
+        closest = min(unvisited, key=lambda v: distance[v])
+ 
+        # mark as visited
+        unvisited.remove(closest)
+ 
+        # update distances
+        for neighbour in closest.get_neighbours():
+           if neighbour in unvisited:
+               new_distance = distance[closest] + closest.get_weight(neighbour)
+               if distance[neighbour] > new_distance:
+                   distance[neighbour] = new_distance
+ 
+    return distance
+ 
+ 
+g = Graph()
+print('Undirected Graph')
+print('Menu')
+print('add vertex <key>')
+print('add edge <src> <dest> <weight>')
+print('shortest <source vertex key>')
+print('display')
+print('quit')
+ 
+while True:
+    do = input('What would you like to do? ').split()
+ 
+    operation = do[0]
+    if operation == 'add':
+        suboperation = do[1]
+        if suboperation == 'vertex':
+            key = int(do[2])
+            if key not in g:
+                g.add_vertex(key)
+            else:
+                print('Vertex already exists.')
+        elif suboperation == 'edge':
+            src = int(do[2])
+            dest = int(do[3])
+            weight = int(do[4])
+            if src not in g:
+                print('Vertex {} does not exist.'.format(src))
+            elif dest not in g:
+                print('Vertex {} does not exist.'.format(dest))
+            else:
+                if not g.does_edge_exist(src, dest):
+                    g.add_edge(src, dest, weight)
+                    g.add_edge(dest, src, weight)
+                else:
+                    print('Edge already exists.')
+ 
+    elif operation == 'shortest':
+        key = int(do[1])
+        source = g.get_vertex(key)
+        distance = dijkstra(g, source)
+        print('Distances from {}: '.format(key))
+        for v in distance:
+            print('Distance to {}: {}'.format(v.get_key(), distance[v]))
+        print()
+ 
+    elif operation == 'display':
+        print('Vertices: ', end='')
+        for v in g:
+            print(v.get_key(), end=' ')
+        print()
+ 
+        print('Edges: ')
+        for v in g:
+            for dest in v.get_neighbours():
+                w = v.get_weight(dest)
+                print('(src={}, dest={}, weight={}) '.format(v.get_key(),
+                                                             dest.get_key(), w))
+        print()
+ 
+    elif operation == 'quit':
+        break
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+5. Hamming code:
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+#include<stdio.h>
+ 
+void main() {
+    int data[10];
+    int dataatrec[10],c,c1,c2,c3,i;
+    printf("Enter 4 bits of data one by one\n");
+    scanf("%d",&data[0]);
+    scanf("%d",&data[1]);
+    scanf("%d",&data[2]);
+    scanf("%d",&data[4]);
+ 
+    //Calculation of even parity
+    data[6]=data[0]^data[2]^data[4];
+data[5]=data[0]^data[1]^data[4];
+data[3]=data[0]^data[1]^data[2];
+ 
+printf("\nEncoded data is\n");
+for(i=0;i<7;i++)
+        printf("%d",data[i]);
+ 
+    printf("\n\nEnter received data bits one by one\n");
+    for(i=0;i<7;i++)
+        scanf("%d",&dataatrec[i]);
+ 
+    c1=dataatrec[6]^dataatrec[4]^dataatrec[2]^dataatrec[0];
+c2=dataatrec[5]^dataatrec[4]^dataatrec[1]^dataatrec[0];
+c3=dataatrec[3]^dataatrec[2]^dataatrec[1]^dataatrec[0];
+c=c3*4+c2*2+c1 ;
+ 
+    if(c==0) {
+printf("\nNo error while transmission of data\n");
+    }
+else {
+printf("\nError on position %d",c);
+    
+printf("\nData sent : ");
+        for(i=0;i<7;i++)
+         printf("%d",data[i]);
+        
+printf("\nData received : ");
+        for(i=0;i<7;i++)
+         printf("%d",dataatrec[i]);
+printf("\nCorrect message is\n");
+ 
+//if errorneous bit is 0 we complement it else vice versa
+if(dataatrec[7-c]==0)
+dataatrec[7-c]=1;
+        else
+dataatrec[7-c]=0;
+for (i=0;i<7;i++) {
+printf("%d",dataatrec[i]);
+}
+}
+}
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+6. Parity
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+a=input("Enter Data")
+i=0
+c=0
+while i<len(a):
+    if a[i]=='1':
+        c+=1
+    i+=1
+if c%2==0:
+    b=0
+else:
+    b=1
+print("Even Parity Of Data : ",a+str(b))
+if c%2!=0:
+    b=0
+else:
+    b=1
+print("Odd Parity of Data : ",a+str(b))
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+7. Distance vector
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+#include<stdio.h>
+struct node
+{
+    unsigned dist[20];
+    unsigned from[20];
+}rt[10];
+int main()
+{
+    int costmat[20][20];
+    int nodes,i,j,k,count=0;
+    printf("\nEnter the number of nodes : ");
+    scanf("%d",&nodes);//Enter the nodes
+    printf("\nEnter the cost matrix :\n");
+    for(i=0;i<nodes;i++)
+    {
+        for(j=0;j<nodes;j++)
+        {
+            scanf("%d",&costmat[i][j]);
+            costmat[i][i]=0;
+            rt[i].dist[j]=costmat[i][j];//initialise the distance equal to cost matrix
+            rt[i].from[j]=j;
+        }
+    }
+        do
+        {
+            count=0;
+            for(i=0;i<nodes;i++)//We choose arbitary vertex k and we calculate the direct distance from the node i to k using the cost matrix
+            //and add the distance from k to node j
+            for(j=0;j<nodes;j++)
+            for(k=0;k<nodes;k++)
+                if(rt[i].dist[j]>costmat[i][k]+rt[k].dist[j])
+                {//We calculate the minimum distance
+                    rt[i].dist[j]=rt[i].dist[k]+rt[k].dist[j];
+                    rt[i].from[j]=k;
+                    count++;
+                }
+        }while(count!=0);
+        for(i=0;i<nodes;i++)
+        {
+            printf("\n\n For router %d\n",i+1);
+            for(j=0;j<nodes;j++)
+            {
+                printf("\t\nnode %d via %d Distance %d ",j+1,rt[i].from[j]+1,rt[i].dist[j]);
+            }
+        }
+    printf("\n\n");
+    getch();
+}
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+8. Ceaser cipher
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+#include<stdio.h>
+int main()
+{
+char message[100], ch;
+int i, key;
+printf("Enter a message to encrypt: ");
+gets(message);
+printf("Enter key: ");
+scanf("%d", &key);
+for(i = 0; message[i] != '\0'; ++i){
+ch = message[i];
+if(ch >= 'a' && ch <= 'z'){
+ch = ch + key;
+if(ch > 'z'){
+ch = ch - 'z' + 'a' - 1;
+}
+message[i] = ch;
+}
+else if(ch >= 'A' && ch <= 'Z'){
+ch = ch + key;
+if(ch > 'Z'){
+ch = ch - 'Z' + 'A' - 1;
+}
+message[i] = ch;
+}
+}
+printf("Encrypted message: %s", message);
+return 0;
+}
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+9. Play fair 
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+// C program to implement Playfair Cipher
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define SIZE 30
+
+// Function to convert the string to lowercase
+void toLowerCase(char plain[], int ps)
+{
+	int i;
+	for (i = 0; i < ps; i++) {
+		if (plain[i] > 64 && plain[i] < 91)
+			plain[i] += 32;
+	}
+}
+
+// Function to remove all spaces in a string
+int removeSpaces(char* plain, int ps)
+{
+	int i, count = 0;
+	for (i = 0; i < ps; i++)
+		if (plain[i] != ' ')
+			plain[count++] = plain[i];
+	plain[count] = '\0';
+	return count;
+}
+
+// Function to generate the 5x5 key square
+void generateKeyTable(char key[], int ks, char keyT[5][5])
+{
+	int i, j, k, flag = 0, *dicty;
+
+	// a 26 character hashmap
+	// to store count of the alphabet
+	dicty = (int*)calloc(26, sizeof(int));
+	for (i = 0; i < ks; i++) {
+		if (key[i] != 'j')
+			dicty[key[i] - 97] = 2;
+	}
+
+	dicty['j' - 97] = 1;
+
+	i = 0;
+	j = 0;
+
+	for (k = 0; k < ks; k++) {
+		if (dicty[key[k] - 97] == 2) {
+			dicty[key[k] - 97] -= 1;
+			keyT[i][j] = key[k];
+			j++;
+			if (j == 5) {
+				i++;
+				j = 0;
+			}
+		}
+	}
+
+	for (k = 0; k < 26; k++) {
+		if (dicty[k] == 0) {
+			keyT[i][j] = (char)(k + 97);
+			j++;
+			if (j == 5) {
+				i++;
+				j = 0;
+			}
+		}
+	}
+}
+
+// Function to search for the characters of a digraph
+// in the key square and return their position
+void search(char keyT[5][5], char a, char b, int arr[])
+{
+	int i, j;
+
+	if (a == 'j')
+		a = 'i';
+	else if (b == 'j')
+		b = 'i';
+
+	for (i = 0; i < 5; i++) {
+
+		for (j = 0; j < 5; j++) {
+
+			if (keyT[i][j] == a) {
+				arr[0] = i;
+				arr[1] = j;
+			}
+			else if (keyT[i][j] == b) {
+				arr[2] = i;
+				arr[3] = j;
+			}
+		}
+	}
+}
+
+// Function to find the modulus with 5
+int mod5(int a) { return (a % 5); }
+
+// Function to make the plain text length to be even
+int prepare(char str[], int ptrs)
+{
+	if (ptrs % 2 != 0) {
+		str[ptrs++] = 'z';
+		str[ptrs] = '\0';
+	}
+	return ptrs;
+}
+
+// Function for performing the encryption
+void encrypt(char str[], char keyT[5][5], int ps)
+{
+	int i, a[4];
+
+	for (i = 0; i < ps; i += 2) {
+
+		search(keyT, str[i], str[i + 1], a);
+
+		if (a[0] == a[2]) {
+			str[i] = keyT[a[0]][mod5(a[1] + 1)];
+			str[i + 1] = keyT[a[0]][mod5(a[3] + 1)];
+		}
+		else if (a[1] == a[3]) {
+			str[i] = keyT[mod5(a[0] + 1)][a[1]];
+			str[i + 1] = keyT[mod5(a[2] + 1)][a[1]];
+		}
+		else {
+			str[i] = keyT[a[0]][a[3]];
+			str[i + 1] = keyT[a[2]][a[1]];
+		}
+	}
+}
+
+// Function to encrypt using Playfair Cipher
+void encryptByPlayfairCipher(char str[], char key[])
+{
+	char ps, ks, keyT[5][5];
+
+	// Key
+	ks = strlen(key);
+	ks = removeSpaces(key, ks);
+	toLowerCase(key, ks);
+
+	// Plaintext
+	ps = strlen(str);
+	toLowerCase(str, ps);
+	ps = removeSpaces(str, ps);
+
+	ps = prepare(str, ps);
+
+	generateKeyTable(key, ks, keyT);
+
+	encrypt(str, keyT, ps);
+}
+
+// Driver code
+int main()
+{
+	char str[SIZE], key[SIZE];
+
+	// Key to be encrypted
+	strcpy(key, "Monarchy");
+	printf("Key text: %s\n", key);
+
+	// Plaintext to be encrypted
+	strcpy(str, "instruments");
+	printf("Plain text: %s\n", str);
+
+	// encrypt using Playfair Cipher
+	encryptByPlayfairCipher(str, key);
+
+	printf("Cipher text: %s\n", str);
+
+	return 0;
+}
+
+// This code is contributed by AbhayBhat
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+10. Rail fence
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+#include<stdio.h>
+#include<string.h>
+ 
+void encryptMsg(char msg[], int key){
+    int msgLen = strlen(msg), i, j, k = -1, row = 0, col = 0;
+    char railMatrix[key][msgLen];
+ 
+    for(i = 0; i < key; ++i)
+        for(j = 0; j < msgLen; ++j)
+            railMatrix[i][j] = '\n';
+ 
+    for(i = 0; i < msgLen; ++i){
+        railMatrix[row][col++] = msg[i];
+ 
+        if(row == 0 || row == key-1)
+            k= k * (-1);
+ 
+        row = row + k;
+    }
+ 
+    printf("\nEncrypted Message: ");
+ 
+    for(i = 0; i < key; ++i)
+        for(j = 0; j < msgLen; ++j)
+            if(railMatrix[i][j] != '\n')
+                printf("%c", railMatrix[i][j]);
+}
+ 
+void decryptMsg(char enMsg[], int key){
+    int msgLen = strlen(enMsg), i, j, k = -1, row = 0, col = 0, m = 0;
+    char railMatrix[key][msgLen];
+ 
+    for(i = 0; i < key; ++i)
+        for(j = 0; j < msgLen; ++j)
+            railMatrix[i][j] = '\n';
+ 
+    for(i = 0; i < msgLen; ++i){
+        railMatrix[row][col++] = '*';
+ 
+        if(row == 0 || row == key-1)
+            k= k * (-1);
+ 
+        row = row + k;
+    }
+ 
+    for(i = 0; i < key; ++i)
+        for(j = 0; j < msgLen; ++j)
+            if(railMatrix[i][j] == '*')
+                railMatrix[i][j] = enMsg[m++];
+ 
+    row = col = 0;
+    k = -1;
+ 
+    printf("\nDecrypted Message: ");
+ 
+    for(i = 0; i < msgLen; ++i){
+        printf("%c", railMatrix[row][col++]);
+ 
+        if(row == 0 || row == key-1)
+            k= k * (-1);
+ 
+        row = row + k;
+    }
+}
+ 
+int main(){
+    char msg[] = "Hello World";
+    char enMsg[] = "Horel ollWd";
+    int key = 3;
+ 
+    printf("Original Message: %s", msg);
+ 
+    encryptMsg(msg, key);
+    decryptMsg(enMsg, key);
+ 
+    return 0;
+}
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+11. RSA
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+#include<stdio.h>
+#include<math.h>
+ 
+//to find gcd
+int gcd(int a, int h)
+{
+    int temp;
+    while(1)
+    {
+        temp = a%h;
+        if(temp==0)
+        return h;
+        a = h;
+        h = temp;
+    }
+}
+ 
+int main()
+{
+    //2 random prime numbers
+    double p = 3;
+    double q = 7;
+    double n=p*q;
+    double count;
+    double totient = (p-1)*(q-1);
+ 
+    //public key
+    //e stands for encrypt
+    double e=2;
+ 
+    //for checking co-prime which satisfies e>1
+    while(e<totient){
+    count = gcd(e,totient);
+    if(count==1)
+        break;
+    else
+        e++;
+    }
+ 
+    //private key
+    //d stands for decrypt
+    double d;
+ 
+    //k can be any arbitrary value
+    double k = 2;
+ 
+    //choosing d such that it satisfies d*e = 1 + k * totient
+    d = (1 + (k*totient))/e;
+    double msg = 12;
+    double c = pow(msg,e);
+    double m = pow(c,d);
+    c=fmod(c,n);
+    m=fmod(m,n);
+ 
+    printf("Message data = %lf",msg);
+    printf("\np = %lf",p);
+    printf("\nq = %lf",q);
+    printf("\nn = pq = %lf",n);
+    printf("\ntotient = %lf",totient);
+    printf("\ne = %lf",e);
+    printf("\nd = %lf",d);
+    printf("\nEncrypted data = %lf",c);
+    printf("\nOriginal Message Sent = %lf",m);
+ 
+    return 0;
+}
